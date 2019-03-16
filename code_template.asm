@@ -74,9 +74,9 @@ WaitForUser:
 	LOAD   Zero
 	OUT    XLEDS       ; clear LEDs once ready to continue
 
-;~~~ ADDED CODE ~~~
+;~~~ ADDED CODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-;~~~ END ADDED CODE
+;~~~ END ADDED CODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Die:
 ; Sometimes it's useful to permanently stop execution.
