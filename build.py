@@ -10,7 +10,7 @@ if not os.path.exists("Code"):
 # Paths for finding source files and destination files
 srcPath = "Code/"
 destPath = "DE2Bot_Spring19/"
-tmpltPath = "Template/"
+tmpltPath = "Templates/"
 
 # ARGUMENT PARSING #
 parser = argparse.ArgumentParser()
@@ -29,13 +29,13 @@ if not os.path.exists(srcPath + source):
 
 template = args.template
 if template is None:
-    template = "code_template.asm"
+    template = "default_template.asm"
     if verbose:
         print("Using default template (default_template.asm)")
 else:
     if template[-4:] != ".asm":
         template += ".asm"
-if not os.path.exists(template):
+if not os.path.exists(tmpltPath + template):
     exit("*** Cannot find the specified template file! ***")
 
 destination = args.destination
