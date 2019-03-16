@@ -2,7 +2,7 @@
 Final DE2Bot Group Project
 
 Place main code files in Code/. Code must be written in `.asm` files. Code files should only include user code.
-***DO NOT EDIT `code_template.asm`.***
+***DO NOT EDIT `default_template.asm` in the Templates/ directory.***
 
 Download the DE2 project and name the folder DE2Bot_Spring19. This must be put in this project directory (/ECE2031/)
 
