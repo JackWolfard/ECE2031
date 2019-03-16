@@ -24,8 +24,8 @@ To "build" the project (i.e. inject the code into the template and create a new 
 
     python3 build.py user_code_filename.asm
 
-This will use the default template (`code_template.asm`) and create the file `RobotCode.asm` in the DE2Bot_Spring19/ directory.
-******Remember to compile the assembly with SCASM and then compile the Quartus project before uploading to the robot.***\***
+This will use the default template (`default_template.asm`) and create the file `RobotCode.asm` in the DE2Bot_Spring19/ directory.
+******Remember to compile the assembly with SCASM and then compile the Quartus project before uploading to the robot.***
 
 `build.py` has some other useful features. To see a brief overview of them, run:
 
