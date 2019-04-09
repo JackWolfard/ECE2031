@@ -81,32 +81,52 @@ Main:
     LOADI   10
     OUT     CTIMER      ; setup movement api
     SEI     &B0010
-    LOAD	MASK4
-    ADD		MASK5
-    ADD		MASK6
-    OUT     SONAREN
 
     ; SW15 & SW14 are used to determine which state to start in for the robot
     ; default (both low) is state 0. encoded in binary
     IN      SWITCHES    ; 0b 1100 0000 0000 0000 // two highlighted we need
     SHIFT   -14         ; 0b 0000 0000 0000 0011
     AND     THREE       ; masking last two bits
-
     STORE   STATE
+
+    SUB     STATE_DRIVE_DESK_TO_CORNER      ; if we're following left wall
+    JNEG    MAIN_SETUP_SONARS_ELSE          ; then enable left sonars
+    CALL    ENABLE_LEFT_SONARS              ; else enable right sonars
+    CALL	SONAR_READ
+    JUMP    SWITCH_STATE
+MAIN_SETUP_SONARS_ELSE:
+    CALL    ENABLE_RIGHT_SONARS
   	CALL	SONAR_READ      ; sonar read: occurs at end of each iter.
                             ;             outputs debugging info.
     JUMP    SWITCH_STATE
 
+ENABLE_LEFT_SONARS:
+    LOAD	MASK4
+    ADD		MASK5
+    ADD		MASK6
+    ADD     MASK3
+    OUT     SONAREN
+    RETURN
+
+ENABLE_RIGHT_SONARS:
+    LOAD    MASK0
+    ADD     MASK1
+    ADD     MASK7
+    ADD     MASK2
+    OUT     SONAREN
+    RETURN
+
+
 DRIVE_PODIUM_TO_CORNER:
-	IN		XPOS
-	SUB		Leg1            ; Leg1 = half a leg, podium to corner
+    IN      DIST3
+    CALL    AVG_SONAR_VALS
 	JPOS	BIG_TURN_LEFT
     JUMP    FOLLOW_RIGHT_WALL
 
 DRIVE_CORNER_TO_DESK:
-	IN		XPOS
-	SUB		Leg2
-	JPOS	TURN_AROUND_DESK
+    IN      DIST3
+    CALL    AVG_SONAR_VALS
+    JPOS	TURN_AROUND_DESK
 FOLLOW_RIGHT_WALL:
     IN      DIST4
     SUB		MAX
@@ -131,14 +151,14 @@ FOLLOW_RIGHT_WALL:
     JUMP    SWITCH_STATE
 
 DRIVE_DESK_TO_CORNER:
-	IN		XPOS
-	SUB		Leg2
-	JPOS	BIG_TURN_RIGHT
+    IN      DIST2
+    CALL    AVG_SONAR_VALS
+    JPOS	BIG_TURN_RIGHT
     JUMP    FOLLOW_LEFT_WALL
 
 DRIVE_CORNER_TO_PODIUM:
-	IN		XPOS
-	SUB		Leg1
+    IN      DIST2
+    CALL    AVG_SONAR_VALS
 	JPOS	TURN_AROUND_PODIUM
 FOLLOW_LEFT_WALL:
     IN      DIST7
@@ -193,10 +213,7 @@ TURN_AROUND_DESK_LOOP:
 	LOAD    STATE_DRIVE_DESK_TO_CORNER
     STORE   STATE
 	; Switch sonars being used
-	LOAD	MASK0
-    ADD		MASK1
-    ADD		MASK7
-    OUT     SONAREN
+	CALL    ENABLE_RIGHT_SONARS
 	OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
@@ -214,10 +231,7 @@ TURN_AROUND_PODIUM_LOOP:
     LOAD    STATE_DRIVE_PODIUM_TO_CORNER
     STORE   STATE
 	; Switch sonars being used
-	LOAD	MASK4
-    ADD		MASK5
-    ADD		MASK6
-    OUT     SONAREN
+	CALL    ENABLE_LEFT_SONARS
 	OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
@@ -318,19 +332,58 @@ SWITCH_STATE:
 	ADDI	-1
 	JZERO	DRIVE_CORNER_TO_PODIUM
 
-STATE_DRIVE_PODIUM_TO_CORNER:   DW  0
-STATE_DRIVE_CORNER_TO_DESK:     DW  1
-STATE_DRIVE_DESK_TO_CORNER:     DW  2
-STATE_DRIVE_CORNER_TO_PODIUM:   DW  3
-WALL_CLOSE_LIMIT:               DW  190
-WALL_FAR_LIMIT:                 DW  210
-CORRECTION:                     DW  5
-Mask8:	  			            DW  &B100000000
-Mask9:	  			            DW  &B1000000000
-Max:                            DW  &H7FFF
-Leg1:                           DW  3000
-Leg2:                           DW  3800
-State:                          DW  0
+; avergage sonar values
+;   records last four sonar values and if they're within turn_limit three times
+;   in a row, then will return True otherwise return False
+;
+; parameters:
+;   - acc:          value of DIST2 or DIST3 depending on which wall being
+;                   followed
+;   - turn_limit:   mem position storing how close it should be before a turn
+; returns:
+;   - acc:          boolean value (0 or 1) for whether or not to
+;                   transition to next state
+AVG_SONAR_VALS:
+    SUB         TURN_LIMIT
+    JNEG        AVG_SONAR_VALS_ADD_ZERO
+    LOADI       1
+    JUMP        AVG_SONAR_VALS_STORE
+AVG_SONAR_VALS_ADD_ZERO:
+    LOADI       0
+AVG_SONAR_VALS_STORE
+    STORE       AVG_SONAR_VALS_ADD
+    LOAD        AVG_SONAR_VALS_AVG
+    SHIFT       1                       ; left 1 position, add a zero in place
+    AND         AVG_SONAR_VALS_AMOUNT   ; mask to cut off overflowed vals
+    ADD         AVG_SONAR_VALS_ADD
+    STORE       AVG_SONAR_VALS_AVG
+    SUB         AVG_SONAR_VALS_AMOUNT
+    JZERO       AVG_SONAR_VALS_RETURN   ; if avg != amount then
+    LOADI       0                       ;   return 0
+    RETURN
+AVG_SONAR_VALS_RETURN:                  ; else
+    LOADI       0                       ;   reset avg to 0
+    STORE       AVG_SONAR_VALS_AVG      ;   return 1
+    LOADI       1
+    RETURN
+
+STATE_DRIVE_PODIUM_TO_CORNER:   DW      0
+STATE_DRIVE_CORNER_TO_DESK:     DW      1
+STATE_DRIVE_DESK_TO_CORNER:     DW      2
+STATE_DRIVE_CORNER_TO_PODIUM:   DW      3
+WALL_CLOSE_LIMIT:               DW      190
+WALL_FAR_LIMIT:                 DW      210
+CORRECTION:                     DW      5
+Mask8:	  			            DW      &B100000000
+Mask9:	  			            DW      &B1000000000
+Max:                            DW      &H7FFF
+Leg1:                           DW      3000
+Leg2:                           DW      3800
+State:                          DW      0
+TURN_LIMIT:                     DW      100
+AVG_SONAR_VALS_AVG:             DW      0
+AVG_SONAR_VALS_ADD:             DW      0
+AVG_SONAR_VALS_AMOUNT:          DW      &B111
 ;~~~ END ADDED CODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Die:
