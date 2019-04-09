@@ -1,0 +1,17 @@
+// Simple Double Setpoint
+
+while (true) {
+    int distance_from_wall = sonar_5
+    if (distance_from_wall > 20) {
+        turn robot right
+        if (sonar_4 < some_distance) {
+            drive straight
+        }
+    }
+    if (distance_from_wall < 15) {
+        turn robot left
+        if (sonar_6 < some_distance) {
+            drive straight
+        }
+    }
+}
