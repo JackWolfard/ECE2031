@@ -665,6 +665,7 @@ Seven:    DW 7
 Eight:    DW 8
 Nine:     DW 9
 Ten:      DW 10
+Max:	  DW &H7FFF
 
 ; Some bit masks.
 ; Masks of multiple bits can be constructed by ORing these
