@@ -1,0 +1,13 @@
+// Simple bang-bang control (NOT OPTIMAL)
+
+boolean turning_left = FALSE
+while (true) {
+    if (sonar_4 is within 12 in of wall and not turning_left) {
+        turn robot left
+        turning_left = TRUE 
+    }
+    if (sonar_6 is within 12 in of wall and turning_left) {
+        turn robot right
+        turning_left = FALSE
+    }
+}
