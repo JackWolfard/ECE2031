@@ -11,6 +11,7 @@ Main:
     SHIFT   -14         ; 0b 0000 0000 0000 0011
     AND     THREE       ; masking last two bits
     STORE   STATE
+    OUT     LCD
 
     SUB     STATE_DRIVE_DESK_TO_CORNER      ; if we're following left wall
     JNEG    MAIN_SETUP_SONARS_ELSE          ; then enable left sonars
@@ -240,10 +241,40 @@ SW_7:
 DIST_DBG:
 	IN		SWITCHES
 	AND		MASK2
-	RETURN
+	JZERO	WALL_RIGHT
 	IN		XPOS
 	OUT		LCD
 	RETURN
+WALL_RIGHT:
+	IN 		SWITCHES
+	AND		MASK8
+	JZERO	WALL_LEFT
+	IN		DIST4
+	OUT		SSEG1
+	IN		DIST6
+	OUT		SSEG2
+	IN		DIST5
+	OUT		LCD
+	RETURN
+WALL_LEFT:
+	IN 		SWITCHES
+	AND		MASK3
+	JZERO	CHECK_STATE
+	IN		DIST1
+	OUT		SSEG1
+	IN		DIST7
+	OUT		SSEG2
+	IN		DIST0
+	OUT		LCD
+	RETURN
+CHECK_STATE:
+	IN		SWITCHES
+	AND		MASK9
+	JZERO	SONAR_READ_END
+	LOAD	STATE
+	OUT		LCD
+SONAR_READ_END:
+    	RETURN
 
 SWITCH_STATE:
 	LOAD	STATE
@@ -273,9 +304,10 @@ AVG_SONAR_VALS:
     JUMP        AVG_SONAR_VALS_STORE
 AVG_SONAR_VALS_ADD_ZERO:
     LOADI       0
-AVG_SONAR_VALS_STORE
+AVG_SONAR_VALS_STORE:
     STORE       AVG_SONAR_VALS_ADD
     LOAD        AVG_SONAR_VALS_AVG
+    OUT         LEDS
     SHIFT       1                       ; left 1 position, add a zero in place
     AND         AVG_SONAR_VALS_AMOUNT   ; mask to cut off overflowed vals
     ADD         AVG_SONAR_VALS_ADD
@@ -306,4 +338,4 @@ State:                          DW      0
 TURN_LIMIT:                     DW      100
 AVG_SONAR_VALS_AVG:             DW      0
 AVG_SONAR_VALS_ADD:             DW      0
-AVG_SONAR_VALS_AMOUNT:          DW      &B111
+AVG_SONAR_VALS_AMOUNT:          DW      &B1111
