@@ -13,21 +13,32 @@ Main:
     STORE   STATE
 
     SUB     STATE_DRIVE_DESK_TO_CORNER      ; if we're following left wall
-    JPOS    ENABLE_LEFT_SONARS              ; then enable left sonars
-    LOAD	MASK4                           ; else enable right sonars
+    JNEG    MAIN_SETUP_SONARS_ELSE          ; then enable left sonars
+    CALL    ENABLE_LEFT_SONARS              ; else enable right sonars
+    CALL	SONAR_READ
+    JUMP    SWITCH_STATE
+MAIN_SETUP_SONARS_ELSE:
+    CALL    ENABLE_RIGHT_SONARS
+  	CALL	SONAR_READ      ; sonar read: occurs at end of each iter.
+                            ;             outputs debugging info.
+    JUMP    SWITCH_STATE
+
+ENABLE_LEFT_SONARS:
+    LOAD	MASK4
     ADD		MASK5
     ADD		MASK6
     ADD     MASK3
-    JUMP    MAIN_SONAR_READ
+    OUT     SONAREN
+    RETURN
+
+ENABLE_RIGHT_SONARS:
     LOAD    MASK0
     ADD     MASK1
     ADD     MASK7
     ADD     MASK2
-MAIN_SONAR_READ:
     OUT     SONAREN
-  	CALL	SONAR_READ      ; sonar read: occurs at end of each iter.
-                            ;             outputs debugging info.
-    JUMP    SWITCH_STATE
+    RETURN
+
 
 DRIVE_PODIUM_TO_CORNER:
     IN      DIST3
@@ -36,9 +47,9 @@ DRIVE_PODIUM_TO_CORNER:
     JUMP    FOLLOW_RIGHT_WALL
 
 DRIVE_CORNER_TO_DESK:
-	IN		XPOS
-	SUB		Leg2
-	JPOS	TURN_AROUND_DESK
+    IN      DIST3
+    CALL    AVG_SONAR_VALS
+    JPOS	TURN_AROUND_DESK
 FOLLOW_RIGHT_WALL:
     IN      DIST4
     SUB		MAX
@@ -63,14 +74,14 @@ FOLLOW_RIGHT_WALL:
     JUMP    SWITCH_STATE
 
 DRIVE_DESK_TO_CORNER:
-	IN		XPOS
-	SUB		Leg2
-	JPOS	BIG_TURN_RIGHT
+    IN      DIST2
+    CALL    AVG_SONAR_VALS
+    JPOS	BIG_TURN_RIGHT
     JUMP    FOLLOW_LEFT_WALL
 
 DRIVE_CORNER_TO_PODIUM:
-	IN		XPOS
-	SUB		Leg1
+    IN      DIST2
+    CALL    AVG_SONAR_VALS
 	JPOS	TURN_AROUND_PODIUM
 FOLLOW_LEFT_WALL:
     IN      DIST7
@@ -125,10 +136,7 @@ TURN_AROUND_DESK_LOOP:
 	LOAD    STATE_DRIVE_DESK_TO_CORNER
     STORE   STATE
 	; Switch sonars being used
-	LOAD	MASK0
-    ADD		MASK1
-    ADD		MASK7
-    OUT     SONAREN
+	CALL    ENABLE_RIGHT_SONARS
 	OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
@@ -146,10 +154,7 @@ TURN_AROUND_PODIUM_LOOP:
     LOAD    STATE_DRIVE_PODIUM_TO_CORNER
     STORE   STATE
 	; Switch sonars being used
-	LOAD	MASK4
-    ADD		MASK5
-    ADD		MASK6
-    OUT     SONAREN
+	CALL    ENABLE_LEFT_SONARS
 	OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
@@ -251,7 +256,7 @@ SWITCH_STATE:
 	JZERO	DRIVE_CORNER_TO_PODIUM
 
 ; avergage sonar values
-;   records last four sonar values and if they're within turn_limit four times
+;   records last four sonar values and if they're within turn_limit three times
 ;   in a row, then will return True otherwise return False
 ;
 ; parameters:
@@ -271,17 +276,18 @@ AVG_SONAR_VALS_ADD_ZERO:
 AVG_SONAR_VALS_STORE
     STORE       AVG_SONAR_VALS_ADD
     LOAD        AVG_SONAR_VALS_AVG
-    SHIFT       1
+    SHIFT       1                       ; left 1 position, add a zero in place
     AND         AVG_SONAR_VALS_AMOUNT   ; mask to cut off overflowed vals
     ADD         AVG_SONAR_VALS_ADD
     STORE       AVG_SONAR_VALS_AVG
-    SUB         AVG_SONAR_VALS_AMOUNT   ; if avg == ammount
-    JNEG        AVG_SONAR_VALS_RETURN   ;   then reset avg to 0
-    LOADI       0
-    STORE       AVG_SONAR_VALS_AVG
-    LOADI       1
+    SUB         AVG_SONAR_VALS_AMOUNT
+    JZERO       AVG_SONAR_VALS_RETURN   ; if avg != amount then
+    LOADI       0                       ;   return 0
     RETURN
-AVG_SONAR_VALS_RETURN:
+AVG_SONAR_VALS_RETURN:                  ; else
+    LOADI       0                       ;   reset avg to 0
+    STORE       AVG_SONAR_VALS_AVG      ;   return 1
+    LOADI       1
     RETURN
 
 STATE_DRIVE_PODIUM_TO_CORNER:   DW      0
@@ -300,4 +306,4 @@ State:                          DW      0
 TURN_LIMIT:                     DW      100
 AVG_SONAR_VALS_AVG:             DW      0
 AVG_SONAR_VALS_ADD:             DW      0
-AVG_SONAR_VALS_AMOUNT:          DW      &B1111
+AVG_SONAR_VALS_AMOUNT:          DW      &B111
