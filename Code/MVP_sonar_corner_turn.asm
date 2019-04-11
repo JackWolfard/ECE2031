@@ -285,7 +285,7 @@ SWITCH_STATE:
     ADDI    -1
     JZERO   DRIVE_CORNER_TO_PODIUM
 
-; avergage sonar values
+; average sonar values
 ;   records last AVG_SONAR_VALS_AMOUNT sonar values and if they're within
 ;   turn_limit three times in a row, then will return True
 ;   otherwise return False
