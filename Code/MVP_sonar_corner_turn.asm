@@ -20,14 +20,14 @@ Main:
     JUMP    SWITCH_STATE
 MAIN_SETUP_SONARS_ELSE:
     CALL    ENABLE_RIGHT_SONARS
-  	CALL	SONAR_READ      ; sonar read: occurs at end of each iter.
+    CALL    SONAR_READ      ; sonar read: occurs at end of each iter.
                             ;             outputs debugging info.
     JUMP    SWITCH_STATE
 
 ENABLE_LEFT_SONARS:
-    LOAD	MASK4
-    ADD		MASK5
-    ADD		MASK6
+    LOAD    MASK4
+    ADD     MASK5
+    ADD     MASK6
     ADD     MASK2
     OUT     SONAREN
     RETURN
@@ -44,29 +44,29 @@ ENABLE_RIGHT_SONARS:
 DRIVE_PODIUM_TO_CORNER:
     IN      DIST3
     CALL    AVG_SONAR_VALS
-	JPOS	BIG_TURN_LEFT
+    JPOS    BIG_TURN_LEFT
     JUMP    FOLLOW_RIGHT_WALL
 
 DRIVE_CORNER_TO_DESK:
     IN      DIST3
     CALL    AVG_SONAR_VALS
-    JPOS	TURN_AROUND_DESK
+    JPOS    TURN_AROUND_DESK
 FOLLOW_RIGHT_WALL:
     IN      DIST4
-    SUB		MAX
-    JNEG	TURN_LEFT
+    SUB     MAX
+    JNEG    TURN_LEFT
     IN      DIST6
-    SUB		MAX
-    JNEG	TURN_RIGHT
-    IN		DIST5
-    SUB		MAX
-    JZERO	TURN_RIGHT
-    IN		DIST5
+    SUB	    MAX
+    JNEG    TURN_RIGHT
+    IN      DIST5
+    SUB	    MAX
+    JZERO   TURN_RIGHT
+    IN      DIST5
     SUB     WALL_CLOSE_LIMIT
-    JNEG	TURN_LEFT
-    IN		DIST5
+    JNEG    TURN_LEFT
+    IN      DIST5
     SUB     WALL_FAR_LIMIT
-    JPOS	TURN_RIGHT
+    JPOS    TURN_RIGHT
     LOADI   0
     STORE   DTheta
     LOAD    FFast
@@ -77,29 +77,29 @@ FOLLOW_RIGHT_WALL:
 DRIVE_DESK_TO_CORNER:
     IN      DIST2
     CALL    AVG_SONAR_VALS
-    JPOS	BIG_TURN_RIGHT
+    JPOS    BIG_TURN_RIGHT
     JUMP    FOLLOW_LEFT_WALL
 
 DRIVE_CORNER_TO_PODIUM:
     IN      DIST2
     CALL    AVG_SONAR_VALS
-	JPOS	TURN_AROUND_PODIUM
+    JPOS    TURN_AROUND_PODIUM
 FOLLOW_LEFT_WALL:
     IN      DIST7
-    SUB		MAX
-    JNEG	TURN_LEFT
+    SUB     MAX
+    JNEG    TURN_LEFT
     IN      DIST1
-    SUB		MAX
-    JNEG	TURN_RIGHT
-    IN		DIST0
-    SUB		MAX
-    JZERO	TURN_LEFT
-    IN		DIST0
+    SUB	    MAX
+    JNEG    TURN_RIGHT
+    IN      DIST0
+    SUB	    MAX
+    JZERO   TURN_LEFT
+    IN      DIST0
     SUB     WALL_CLOSE_LIMIT
-    JNEG	TURN_RIGHT
-    IN		DIST0
+    JNEG    TURN_RIGHT
+    IN      DIST0
     SUB     WALL_FAR_LIMIT
-    JPOS	TURN_LEFT
+    JPOS    TURN_LEFT
     LOADI   0
     STORE   DTheta
     LOAD    FFast
@@ -111,180 +111,179 @@ FOLLOW_LEFT_WALL:
 TURN_LEFT:
     LOAD    CORRECTION
     STORE   DTheta
-	LOAD	FFast
+    LOAD    FFast
     STORE   Dvel
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
 
 TURN_RIGHT:
-	LOAD    CORRECTION
+    LOAD    CORRECTION
     STORE   DTheta
-	LOAD	FFast
+    LOAD    FFast
     STORE   Dvel
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
 
 TURN_AROUND_DESK:
     OUT     RESETPOS
-	LOADI	179
-	STORE	DTheta
+    LOADI   179
+    STORE   DTheta
 TURN_AROUND_DESK_LOOP:
-	IN		Theta
-	ADDI	-179
-	CALL	Abs
-	ADDI	-3
-	JPOS	TURN_AROUND_DESK_LOOP
-	LOAD    STATE_DRIVE_DESK_TO_CORNER
+    IN     Theta
+    ADDI    -179
+    CALL    Abs
+    ADDI    -3
+    JPOS    TURN_AROUND_DESK_LOOP
+    LOAD    STATE_DRIVE_DESK_TO_CORNER
     STORE   STATE
-	; Switch sonars being used
-	CALL    ENABLE_RIGHT_SONARS
-	OUT     RESETPOS
+    ; Switch sonars being used
+    CALL    ENABLE_RIGHT_SONARS
+    OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
 
 TURN_AROUND_PODIUM:
     OUT     RESETPOS
-	LOADI	179
-	STORE	DTheta
+    LOADI   179
+    STORE   DTheta
 TURN_AROUND_PODIUM_LOOP:
-	IN		Theta
-	ADDI	-179
-	CALL	Abs
-	ADDI	-3
-	JPOS	TURN_AROUND_PODIUM_LOOP
+    IN      Theta
+    ADDI    -179
+    CALL    Abs
+    ADDI    -3
+    JPOS    TURN_AROUND_PODIUM_LOOP
     LOAD    STATE_DRIVE_PODIUM_TO_CORNER
     STORE   STATE
-	; Switch sonars being used
-	CALL    ENABLE_LEFT_SONARS
-	OUT     RESETPOS
+    ; Switch sonars being used
+    CALL    ENABLE_LEFT_SONARS
+    OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
 
 ; At corner, need to do a 90* turn
 BIG_TURN_LEFT:
     OUT     RESETPOS                ; reset odometry
-	LOADI	90
-	STORE	DTheta
+    LOADI   90
+    STORE   DTheta
 BIG_TURN_LEFT_LOOP:
-	IN		Theta
-	ADDI	-90                     ; while (abs(THETA - 90) > 3)
-	CALL	Abs
-	ADDI	-3
-	JPOS	BIG_TURN_LEFT_LOOP
-	LOAD    STATE_DRIVE_CORNER_TO_DESK
+    IN      Theta
+    ADDI    -90                     ; while (abs(THETA - 90) > 3)
+    CALL    Abs
+    ADDI    -3
+    JPOS    BIG_TURN_LEFT_LOOP
+    LOAD    STATE_DRIVE_CORNER_TO_DESK
     STORE   STATE
-	OUT     RESETPOS
+    OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
 
 BIG_TURN_RIGHT:
-	OUT     RESETPOS
-	LOADI	-90
-	STORE	DTheta
+    OUT     RESETPOS
+    LOADI   -90
+    STORE   DTheta
 BIG_TURN_RIGHT_LOOP:
-	IN		Theta
-	ADDI	-270                      ; while (abs(THETA - 270) > 3)
-	CALL	Abs
-	ADDI	-3
-	JPOS	BIG_TURN_RIGHT_LOOP
-	LOAD	STATE_DRIVE_CORNER_TO_PODIUM
-	STORE	STATE
-	OUT     RESETPOS
+    IN      Theta
+    ADDI    -270                      ; while (abs(THETA - 270) > 3)
+    CALL    Abs
+    ADDI    -3
+    JPOS    BIG_TURN_RIGHT_LOOP
+    LOAD    STATE_DRIVE_CORNER_TO_PODIUM
+    STORE   STATE
+    OUT     RESETPOS
     CALL    SONAR_READ
     JUMP    SWITCH_STATE
 
 ; debug block
 ; results in going to SWITCH_STATE after debugging is over
 SONAR_READ:                 ; switch (current switch)
-	IN 		SWITCHES
-	AND		MASK0
-	JZERO	SW_1            ; case SW_1:
-                            ;       print DIST0
-	IN		DIST0
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK0           ; case SW_1
+    JZERO   SW_1            ;       print DIST0
+    IN      DIST0
+    OUT     LCD
+    RETURN
 SW_1:
-	IN		SWITCHES
-	AND		MASK1
-	JZERO	SW_4
-	IN		DIST1
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK1
+    JZERO   SW_4
+    IN      DIST1
+    OUT     LCD
+    RETURN
 SW_4:
-	IN		SWITCHES
-	AND		MASK4
-	JZERO	SW_5
-	IN		DIST4
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK4
+    JZERO   SW_5
+    IN      DIST4
+    OUT     LCD
+    RETURN
 SW_5:
-	IN 		SWITCHES
-	AND 	MASK5
-	JZERO	SW_6
-	IN		DIST5
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK5
+    JZERO   SW_6
+    IN      DIST5
+    OUT	    LCD
+    RETURN
 SW_6:
-	IN		SWITCHES
-	AND		MASK6
-	JZERO	SW_7
-	IN		DIST6
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK6
+    JZERO   SW_7
+    IN      DIST6
+    OUT     LCD
+    RETURN
 SW_7:
-	IN		SWITCHES
-	AND		MASK7
-	JZERO	DIST_DBG
-	IN		DIST7
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK7
+    JZERO   DIST_DBG
+    IN      DIST7
+    OUT     LCD
+    RETURN
 DIST_DBG:
-	IN		SWITCHES
-	AND		MASK2
-	JZERO	WALL_RIGHT
-	IN		XPOS
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK2
+    JZERO   WALL_RIGHT
+    IN      XPOS
+    OUT     LCD
+    RETURN
 WALL_RIGHT:
-	IN 		SWITCHES
-	AND		MASK8
-	JZERO	WALL_LEFT
-	IN		DIST4
-	OUT		SSEG1
-	IN		DIST6
-	OUT		SSEG2
-	IN		DIST5
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK8
+    JZERO   WALL_LEFT
+    IN      DIST4
+    OUT	    SSEG1
+    IN      DIST6
+    OUT	    SSEG2
+    IN      DIST5
+    OUT     LCD
+    RETURN
 WALL_LEFT:
-	IN 		SWITCHES
-	AND		MASK3
-	JZERO	CHECK_STATE
-	IN		DIST1
-	OUT		SSEG1
-	IN		DIST7
-	OUT		SSEG2
-	IN		DIST0
-	OUT		LCD
-	RETURN
+    IN      SWITCHES
+    AND     MASK3
+    JZERO   CHECK_STATE
+    IN      DIST1
+    OUT     SSEG1
+    IN      DIST7
+    OUT     SSEG2
+    IN      DIST0
+    OUT     LCD
+    RETURN
 CHECK_STATE:
-	IN		SWITCHES
-	AND		MASK9
-	JZERO	SONAR_READ_END
-	LOAD	STATE
-	OUT		LCD
+    IN      SWITCHES
+    AND     MASK9
+    JZERO   SONAR_READ_END
+    LOAD    STATE
+    OUT     LCD
 SONAR_READ_END:
-    	RETURN
+    RETURN
 
 SWITCH_STATE:
-	LOAD	STATE
-	JZERO	DRIVE_PODIUM_TO_CORNER
-	ADDI	-1
-	JZERO	DRIVE_CORNER_TO_DESK
-	ADDI	-1
-	JZERO	DRIVE_DESK_TO_CORNER
-	ADDI	-1
-	JZERO	DRIVE_CORNER_TO_PODIUM
+    LOAD    STATE
+    JZERO   DRIVE_PODIUM_TO_CORNER
+    ADDI    -1
+    JZERO   DRIVE_CORNER_TO_DESK
+    ADDI    -1
+    JZERO   DRIVE_DESK_TO_CORNER
+    ADDI    -1
+    JZERO   DRIVE_CORNER_TO_PODIUM
 
 ; avergage sonar values
 ;   records last AVG_SONAR_VALS_AMOUNT sonar values and if they're within
