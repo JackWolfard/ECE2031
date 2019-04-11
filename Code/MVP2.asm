@@ -250,7 +250,8 @@ FOLLOW_LEFT_WALL: ; TODO: Make this a subroutine
 
 ; Small turn left for following the wall
 TURN_LEFT:      ; TODO: make this a subroutine
-    LOAD    CORRECTION
+    LOADI   0
+    SUB     CORRECTION
     STORE   DTheta
     LOAD    FFast
     STORE   Dvel
