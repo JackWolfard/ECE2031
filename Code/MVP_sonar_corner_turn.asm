@@ -1,9 +1,9 @@
 Main:
     ; starting information
     OUT     RESETPOS
-    LOADI   10
-    OUT     CTIMER      ; setup movement api
-    SEI     &B0010
+    LOADI   10          ; 10ms increment * 10 = 100ms
+    OUT     CTIMER      ; setup movement api to interrupt every 100ms
+    SEI     &B0010      ; enable CTIMER interrupts
 
     ; SW15 & SW14 are used to determine which state to start in for the robot
     ; default (both low) is state 0. encoded in binary
@@ -117,7 +117,9 @@ TURN_LEFT:
     JUMP    SWITCH_STATE
 
 TURN_RIGHT:
-    LOAD    CORRECTION
+    LOAD    CORRECTION          ; right turn is negative
+    NOT                         ; should be -correction
+    ADDI    1                   ; flip bits and add one for two's complement
     STORE   DTheta
     LOAD    FFast
     STORE   Dvel
@@ -326,12 +328,12 @@ STATE_DRIVE_PODIUM_TO_CORNER:   DW      0
 STATE_DRIVE_CORNER_TO_DESK:     DW      1
 STATE_DRIVE_DESK_TO_CORNER:     DW      2
 STATE_DRIVE_CORNER_TO_PODIUM:   DW      3
-WALL_CLOSE_LIMIT:               DW      190
-WALL_FAR_LIMIT:                 DW      210
-CORRECTION:                     DW      5
-Mask8:                          DW      &B100000000
-Mask9:                          DW      &B1000000000
-MAX:                            DW      &H7FFF
+WALL_CLOSE_LIMIT:               DW      190         ; 190mm from wall
+WALL_FAR_LIMIT:                 DW      210         ; 210mm from wall
+CORRECTION:                     DW      5           ; 5 degrees
+Mask8:                          DW      &B100       ; 0001 0000 0000
+Mask9:                          DW      &H200       ; 0010 0000 0000
+MAX:                            DW      &H7FFF      ; max value sonars read
 State:                          DW      0
 TURN_LIMIT:                     DW      &H00C8      ; 200mm
 AVG_SONAR_VALS_AVG:             DW      0
