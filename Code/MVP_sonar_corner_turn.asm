@@ -66,14 +66,19 @@ DRIVE_PODIUM_TO_CORNER:
     CALL    AVG_SONAR_VALS
     JZERO   FOLLOW_RIGHT_WALL
     CALL    BIG_TURN_LEFT
+    OUT     RESETPOS
+    LOAD    STATE_DRIVE_CORNER_TO_DESK
+    STORE   STATE
     RETURN
 DRIVE_CORNER_TO_DESK:
     IN      DIST3
     CALL    AVG_SONAR_VALS
     JZERO   FOLLOW_RIGHT_WALL
     CALL    TURN_AROUND
-    CALL    ENABLE_LEFT_SONARS
     OUT     RESETPOS
+    CALL    ENABLE_LEFT_SONARS
+    LOAD    STATE_DRIVE_DESK_TO_CORNER
+    STORE   STATE
     RETURN
 FOLLOW_RIGHT_WALL:
     IN      DIST4
@@ -102,14 +107,19 @@ DRIVE_DESK_TO_CORNER:
     CALL    AVG_SONAR_VALS
     JZERO   FOLLOW_LEFT_WALL
     CALL    BIG_TURN_RIGHT
+    OUT     RESETPOS
+    LOAD    STATE_DRIVE_CORNER_TO_PODIUM
+    STORE   STATE
     RETURN
 DRIVE_CORNER_TO_PODIUM:
     IN      DIST2
     CALL    AVG_SONAR_VALS
     JZERO   FOLLOW_LEFT_WALL
     CALL    TURN_AROUND
-    CALL    ENABLE_RIGHT_SONARS
     OUT     RESETPOS
+    CALL    ENABLE_RIGHT_SONARS
+    LOAD    STATE_DRIVE_PODIUM_TO_CORNER
+    STORE   STATE
     RETURN
 FOLLOW_LEFT_WALL:
     IN      DIST7
@@ -175,9 +185,6 @@ BIG_TURN_LEFT_LOOP:
     CALL    Abs
     ADDI    -3
     JPOS    BIG_TURN_LEFT_LOOP
-    LOAD    STATE_DRIVE_CORNER_TO_DESK
-    STORE   STATE
-    OUT     RESETPOS
     RETURN
 
 BIG_TURN_RIGHT:
@@ -190,91 +197,17 @@ BIG_TURN_RIGHT_LOOP:
     CALL    Abs
     ADDI    -3
     JPOS    BIG_TURN_RIGHT_LOOP
-    LOAD    STATE_DRIVE_CORNER_TO_PODIUM
-    STORE   STATE
-    OUT     RESETPOS
     RETURN
 
 ; debug block
 ; results in going to SWITCH_STATE after debugging is over
 SONAR_READ:                 ; switch (current switch)
-    IN      SWITCHES
-    AND     MASK0           ; case SW_1
-    JZERO   SW_1            ;       print DIST0
-    IN      DIST0
-    OUT     LCD
-    RETURN
-SW_1:
-    IN      SWITCHES
-    AND     MASK1
-    JZERO   SW_4
-    IN      DIST1
-    OUT     LCD
-    RETURN
-SW_4:
-    IN      SWITCHES
-    AND     MASK4
-    JZERO   SW_5
-    IN      DIST4
-    OUT     LCD
-    RETURN
-SW_5:
-    IN      SWITCHES
-    AND     MASK5
-    JZERO   SW_6
-    IN      DIST5
-    OUT	    LCD
-    RETURN
-SW_6:
-    IN      SWITCHES
-    AND     MASK6
-    JZERO   SW_7
-    IN      DIST6
-    OUT     LCD
-    RETURN
-SW_7:
-    IN      SWITCHES
-    AND     MASK7
-    JZERO   DIST_DBG
-    IN      DIST7
-    OUT     LCD
-    RETURN
-DIST_DBG:
-    IN      SWITCHES
-    AND     MASK2
-    JZERO   WALL_RIGHT
-    IN      XPOS
-    OUT     LCD
-    RETURN
-WALL_RIGHT:
-    IN      SWITCHES
-    AND     MASK8
-    JZERO   WALL_LEFT
-    IN      DIST4
-    OUT	    SSEG1
-    IN      DIST6
-    OUT	    SSEG2
-    IN      DIST5
-    OUT     LCD
-    RETURN
-WALL_LEFT:
-    IN      SWITCHES
-    AND     MASK3
-    JZERO   CHECK_STATE
-    IN      DIST1
-    OUT     SSEG1
-    IN      DIST7
-    OUT     SSEG2
-    IN      DIST0
-    OUT     LCD
-    RETURN
-CHECK_STATE:
-    IN      SWITCHES
-    AND     MASK9
-    JZERO   SONAR_READ_END
-    LOAD    STATE
-    OUT     LCD
-SONAR_READ_END:
+    IN DIST2
+    OUT SSEG1
+    IN DIST3
+    OUT SSEG2
+    LOAD STATE
+    OUT LCD
     RETURN
 
 
@@ -326,7 +259,7 @@ Mask8:                          DW      &B100       ; 0001 0000 0000
 Mask9:                          DW      &H200       ; 0010 0000 0000
 MAX:                            DW      &H7FFF      ; max value sonars read
 State:                          DW      0
-TURN_LIMIT:                     DW      &H00C8      ; 200mm
+TURN_LIMIT:                     DW      &H0250      ; ?? mm best val
 AVG_SONAR_VALS_AVG:             DW      0
 AVG_SONAR_VALS_ADD:             DW      0
-AVG_SONAR_VALS_AMOUNT:          DW      &B11111     ; need five ones in a row
+AVG_SONAR_VALS_AMOUNT:          DW      &B111       ; need five ones in a row
