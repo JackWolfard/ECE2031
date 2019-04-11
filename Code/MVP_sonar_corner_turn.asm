@@ -142,9 +142,8 @@ TURN_LEFT:
     RETURN
 
 TURN_RIGHT:
-    LOAD    CORRECTION          ; right turn is negative
-    NOT                         ; should be -correction
-    ADDI    1                   ; flip bits and add one for two's complement
+    LOADI   0
+    SUB     CORRECTION          ; right turn is negative, should be -CORRECTION
     STORE   DTheta
     LOAD    FFast
     STORE   Dvel
