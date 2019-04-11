@@ -250,8 +250,7 @@ FOLLOW_LEFT_WALL: ; TODO: Make this a subroutine
 
 ; Small turn left for following the wall
 TURN_LEFT:      ; TODO: make this a subroutine
-    LOADI   0
-    SUB     CORRECTION
+    LOAD    CORRECTION
     STORE   DTheta
     LOAD    FFast
     STORE   Dvel
@@ -391,8 +390,6 @@ STATE_DRIVE_CORNER_TO_PODIUM:   DW  3   ; 2nd half of returning leg
 WALL_CLOSE_LIMIT:   DW  190     ; Lower threshold for DSP control
 WALL_FAR_LIMIT:     DW  210     ; Upper threshold for DSP control
 CORRECTION:         DW  5       ; Correction to left wheel speed for turning
-Mask8:              DW  &B100000000  ; TODO: Move to template
-Mask9:              DW  &B1000000000 ; TODO: Move to template
 Max:                DW  &H7FFF  ; Maximum distance read by sonars
 Leg1:               DW  3000    ; Encoder distance for 1st half of leg
 Leg2:               DW  3800    ; Encoder distance for 2nd half of leg
