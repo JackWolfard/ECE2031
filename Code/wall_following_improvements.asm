@@ -10,7 +10,7 @@ Main:
     OUT     SONAREN
     LOAD    STATE_DRIVE_PODIUM_TO_CORNER ; Start STATE = 0
     STORE   STATE
-      CALL	SONAR_READ      ; sonar read: occurs at end of each iter.
+    CALL	SONAR_READ      ; sonar read: occurs at end of each iter.
                             ;             outputs debugging info.
     JUMP    SWITCH_STATE
 
