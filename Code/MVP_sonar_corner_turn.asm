@@ -20,9 +20,30 @@ Main:
     JUMP    SWITCH_STATE
 MAIN_SETUP_SONARS_ELSE:
     CALL    ENABLE_RIGHT_SONARS
-    CALL    SONAR_READ      ; sonar read: occurs at end of each iter.
-                            ;             outputs debugging info.
-    JUMP    SWITCH_STATE
+
+MAIN_LOOP:
+    CALL    SONAR_READ                  ; ouputs debug info
+    CALL    SWITCH_STATE                ; switches to current state handler
+    JUMP    MAIN_LOOP
+
+SWITCH_STATE:
+    LOAD    STATE
+    JZERO   CALL_DRIVE_PODIUM_TO_CORNER
+    ADDI    -1
+    JZERO   CALL_DRIVE_CORNER_TO_DESK
+    ADDI    -1
+    JZERO   CALL_DRIVE_DESK_TO_CORNER
+    CALL    DRIVE_CORNER_TO_PODIUM
+    RETURN
+CALL_DRIVE_PODIUM_TO_CORNER:
+    CALL    DRIVE_PODIUM_TO_CORNER
+    RETURN
+CALL_DRIVE_CORNER_TO_DESK:
+    CALL    DRIVE_CORNER_TO_DESK
+    RETURN
+CALL_DRIVE_DESK_TO_CORNER:
+    CALL    DRIVE_DESK_TO_CORNER
+    RETURN
 
 ENABLE_LEFT_SONARS:
     LOAD    MASK4
@@ -40,17 +61,20 @@ ENABLE_RIGHT_SONARS:
     OUT     SONAREN
     RETURN
 
-
 DRIVE_PODIUM_TO_CORNER:
     IN      DIST3
     CALL    AVG_SONAR_VALS
-    JPOS    BIG_TURN_LEFT
-    JUMP    FOLLOW_RIGHT_WALL
-
+    JZERO   FOLLOW_RIGHT_WALL
+    CALL    BIG_TURN_LEFT
+    RETURN
 DRIVE_CORNER_TO_DESK:
     IN      DIST3
     CALL    AVG_SONAR_VALS
-    JPOS    TURN_AROUND_DESK
+    JZERO   FOLLOW_RIGHT_WALL
+    CALL    TURN_AROUND
+    CALL    ENABLE_LEFT_SONARS
+    OUT     RESETPOS
+    RETURN
 FOLLOW_RIGHT_WALL:
     IN      DIST4
     SUB     MAX
@@ -71,19 +95,22 @@ FOLLOW_RIGHT_WALL:
     STORE   DTheta
     LOAD    FFast
     STORE   DVel
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    RETURN
 
 DRIVE_DESK_TO_CORNER:
     IN      DIST2
     CALL    AVG_SONAR_VALS
-    JPOS    BIG_TURN_RIGHT
-    JUMP    FOLLOW_LEFT_WALL
-
+    JZERO   FOLLOW_LEFT_WALL
+    CALL    BIG_TURN_RIGHT
+    RETURN
 DRIVE_CORNER_TO_PODIUM:
     IN      DIST2
     CALL    AVG_SONAR_VALS
-    JPOS    TURN_AROUND_PODIUM
+    JZERO   FOLLOW_LEFT_WALL
+    CALL    TURN_AROUND
+    CALL    ENABLE_RIGHT_SONARS
+    OUT     RESETPOS
+    RETURN
 FOLLOW_LEFT_WALL:
     IN      DIST7
     SUB     MAX
@@ -104,8 +131,7 @@ FOLLOW_LEFT_WALL:
     STORE   DTheta
     LOAD    FFast
     STORE   DVel
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    RETURN
 
 
 TURN_LEFT:
@@ -113,8 +139,7 @@ TURN_LEFT:
     STORE   DTheta
     LOAD    FFast
     STORE   Dvel
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    RETURN
 
 TURN_RIGHT:
     LOAD    CORRECTION          ; right turn is negative
@@ -123,44 +148,22 @@ TURN_RIGHT:
     STORE   DTheta
     LOAD    FFast
     STORE   Dvel
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    RETURN
 
-TURN_AROUND_DESK:
+TURN_AROUND:
     OUT     RESETPOS
     LOADI   179
     STORE   DTheta
-TURN_AROUND_DESK_LOOP:
-    IN     Theta
-    ADDI    -179
-    CALL    Abs
-    ADDI    -3
-    JPOS    TURN_AROUND_DESK_LOOP
-    LOAD    STATE_DRIVE_DESK_TO_CORNER
-    STORE   STATE
-    ; Switch sonars being used
-    CALL    ENABLE_RIGHT_SONARS
-    OUT     RESETPOS
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
-
-TURN_AROUND_PODIUM:
-    OUT     RESETPOS
-    LOADI   179
-    STORE   DTheta
-TURN_AROUND_PODIUM_LOOP:
+TURN_AROUND_LOOP:
     IN      Theta
     ADDI    -179
     CALL    Abs
     ADDI    -3
-    JPOS    TURN_AROUND_PODIUM_LOOP
-    LOAD    STATE_DRIVE_PODIUM_TO_CORNER
-    STORE   STATE
-    ; Switch sonars being used
-    CALL    ENABLE_LEFT_SONARS
+    JPOS    TURN_AROUND_LOOP
     OUT     RESETPOS
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    LOADI   0               ; assume we're going straight
+    OUT     DTheta
+    RETURN
 
 ; At corner, need to do a 90* turn
 BIG_TURN_LEFT:
@@ -176,8 +179,7 @@ BIG_TURN_LEFT_LOOP:
     LOAD    STATE_DRIVE_CORNER_TO_DESK
     STORE   STATE
     OUT     RESETPOS
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    RETURN
 
 BIG_TURN_RIGHT:
     OUT     RESETPOS
@@ -192,8 +194,7 @@ BIG_TURN_RIGHT_LOOP:
     LOAD    STATE_DRIVE_CORNER_TO_PODIUM
     STORE   STATE
     OUT     RESETPOS
-    CALL    SONAR_READ
-    JUMP    SWITCH_STATE
+    RETURN
 
 ; debug block
 ; results in going to SWITCH_STATE after debugging is over
@@ -277,15 +278,6 @@ CHECK_STATE:
 SONAR_READ_END:
     RETURN
 
-SWITCH_STATE:
-    LOAD    STATE
-    JZERO   DRIVE_PODIUM_TO_CORNER
-    ADDI    -1
-    JZERO   DRIVE_CORNER_TO_DESK
-    ADDI    -1
-    JZERO   DRIVE_DESK_TO_CORNER
-    ADDI    -1
-    JZERO   DRIVE_CORNER_TO_PODIUM
 
 ; average sonar values
 ;   records last AVG_SONAR_VALS_AMOUNT sonar values and if they're within
