@@ -16,7 +16,7 @@ Main:
     SUB     STATE_DRIVE_DESK_TO_CORNER      ; if we're following left wall
     JNEG    MAIN_SETUP_SONARS_ELSE          ; then enable left sonars
     CALL    ENABLE_LEFT_SONARS              ; else enable right sonars
-    CALL	SONAR_READ
+    CALL    SONAR_READ
     JUMP    SWITCH_STATE
 MAIN_SETUP_SONARS_ELSE:
     CALL    ENABLE_RIGHT_SONARS
@@ -329,8 +329,8 @@ STATE_DRIVE_CORNER_TO_PODIUM:   DW      3
 WALL_CLOSE_LIMIT:               DW      190
 WALL_FAR_LIMIT:                 DW      210
 CORRECTION:                     DW      5
-Mask8:	  			            DW      &B100000000
-Mask9:	  			            DW      &B1000000000
+Mask8:                          DW      &B100000000
+Mask9:                          DW      &B1000000000
 MAX:                            DW      &H7FFF
 State:                          DW      0
 TURN_LIMIT:                     DW      &H00C8      ; 200mm
