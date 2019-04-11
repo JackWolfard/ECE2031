@@ -291,17 +291,17 @@ SWITCH_STATE:
 
 ; Make state labels:
 ; DRIVE_THERE_1: &DW 1
-STATE_DRIVE_PODIUM_TO_CORNER:    DW  0
-STATE_DRIVE_CORNER_TO_DESK:      DW  1
-STATE_DRIVE_DESK_TO_CORNER:      DW  2
+STATE_DRIVE_PODIUM_TO_CORNER:   DW  0
+STATE_DRIVE_CORNER_TO_DESK:     DW  1
+STATE_DRIVE_DESK_TO_CORNER:     DW  2
 STATE_DRIVE_CORNER_TO_PODIUM:   DW  3
 WALL_CLOSE_LIMIT:               DW  190
 WALL_FAR_LIMIT:                 DW  210
-CORRECTION:                     DW     100
-L_SPEED_CORRECT:                DW    0
-Mask8:                  DW &B100000000
-Mask9:                  DW &B1000000000
-Max:                 DW &H7FFF
-Leg1:                 DW 3000
-Leg2:                  DW 3800
-State:                  DW 0 
+CORRECTION:                     DW  100
+L_SPEED_CORRECT:                DW  0
+Mask8:                          DW &B100000000
+Mask9:                          DW &B1000000000
+Max:                            DW &H7FFF
+Leg1:                           DW 3000
+Leg2:                           DW 3800
+State:                          DW 0 
