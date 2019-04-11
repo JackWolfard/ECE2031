@@ -28,7 +28,7 @@ ENABLE_LEFT_SONARS:
     LOAD	MASK4
     ADD		MASK5
     ADD		MASK6
-    ADD     MASK3
+    ADD     MASK2
     OUT     SONAREN
     RETURN
 
@@ -36,7 +36,7 @@ ENABLE_RIGHT_SONARS:
     LOAD    MASK0
     ADD     MASK1
     ADD     MASK7
-    ADD     MASK2
+    ADD     MASK3
     OUT     SONAREN
     RETURN
 
@@ -287,8 +287,9 @@ SWITCH_STATE:
 	JZERO	DRIVE_CORNER_TO_PODIUM
 
 ; avergage sonar values
-;   records last four sonar values and if they're within turn_limit three times
-;   in a row, then will return True otherwise return False
+;   records last AVG_SONAR_VALS_AMOUNT sonar values and if they're within
+;   turn_limit three times in a row, then will return True
+;   otherwise return False
 ;
 ; parameters:
 ;   - acc:          value of DIST2 or DIST3 depending on which wall being
@@ -299,7 +300,7 @@ SWITCH_STATE:
 ;                   transition to next state
 AVG_SONAR_VALS:
     SUB         TURN_LIMIT
-    JNEG        AVG_SONAR_VALS_ADD_ZERO
+    JPOS        AVG_SONAR_VALS_ADD_ZERO
     LOADI       1
     JUMP        AVG_SONAR_VALS_STORE
 AVG_SONAR_VALS_ADD_ZERO:
@@ -307,10 +308,10 @@ AVG_SONAR_VALS_ADD_ZERO:
 AVG_SONAR_VALS_STORE:
     STORE       AVG_SONAR_VALS_ADD
     LOAD        AVG_SONAR_VALS_AVG
-    OUT         LEDS
     SHIFT       1                       ; left 1 position, add a zero in place
     AND         AVG_SONAR_VALS_AMOUNT   ; mask to cut off overflowed vals
     ADD         AVG_SONAR_VALS_ADD
+    OUT         LEDS
     STORE       AVG_SONAR_VALS_AVG
     SUB         AVG_SONAR_VALS_AMOUNT
     JZERO       AVG_SONAR_VALS_RETURN   ; if avg != amount then
@@ -331,11 +332,9 @@ WALL_FAR_LIMIT:                 DW      210
 CORRECTION:                     DW      5
 Mask8:	  			            DW      &B100000000
 Mask9:	  			            DW      &B1000000000
-Max:                            DW      &H7FFF
-Leg1:                           DW      3000
-Leg2:                           DW      3800
+MAX:                            DW      &H7FFF
 State:                          DW      0
-TURN_LIMIT:                     DW      100
+TURN_LIMIT:                     DW      &H00C8      ; 200mm
 AVG_SONAR_VALS_AVG:             DW      0
 AVG_SONAR_VALS_ADD:             DW      0
-AVG_SONAR_VALS_AMOUNT:          DW      &B1111
+AVG_SONAR_VALS_AMOUNT:          DW      &B11111     ; need five ones in a row
