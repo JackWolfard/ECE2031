@@ -29,7 +29,7 @@ MAIN_SETUP_SONARS_ELSE:
     JUMP    SWITCH_STATE
 
 ; Enables sonars for following the left wall
-ENABLE_LEFT_SONARS:
+ENABLE_LEFT_SONARS: ; TODO: make a new bit mask that has all 3 sonar bits
     LOAD    MASK4
     ADD     MASK5
     ADD     MASK6
@@ -37,7 +37,7 @@ ENABLE_LEFT_SONARS:
     RETURN
 
 ; Enables sonars for following the right wall
-ENABLE_RIGHT_SONARS:
+ENABLE_RIGHT_SONARS:    ; TODO: make a new bit mask that has all 3 sonar bits
     LOAD    MASK0
     ADD     MASK1
     ADD     MASK7
@@ -95,8 +95,8 @@ DRIVE_CORNER_TO_PODIUM:
 
 ; Turn around at the desk
 TURN_AROUND_DESK:
-	LOAD	ZERO
-	STORE	L_SPEED_CORRECT
+    LOAD    ZERO
+    STORE   L_SPEED_CORRECT
     ; Start the turn
     OUT     RESETPOS
     LOADI   179
@@ -122,8 +122,8 @@ TURN_AROUND_DESK_LOOP:
 
 ; Turn around at the podium
 TURN_AROUND_PODIUM:
-	LOAD	ZERO
-	STORE	L_SPEED_CORRECT
+    LOAD    ZERO
+    STORE   L_SPEED_CORRECT
     ; Start the turn
     OUT     RESETPOS
     LOADI   179
@@ -149,8 +149,8 @@ TURN_AROUND_PODIUM_LOOP:
 
 ; At corner, do a 90* turn left
 BIG_TURN_LEFT:
-	LOAD	ZERO
-	STORE	L_SPEED_CORRECT
+    LOAD    ZERO
+    STORE   L_SPEED_CORRECT
     ; Start the turn
     OUT     RESETPOS
     LOADI   90
@@ -173,12 +173,12 @@ BIG_TURN_LEFT_LOOP:
 
 ; At corner, do a 90* turn right
 BIG_TURN_RIGHT:
-	LOAD	ZERO
-	STORE	L_SPEED_CORRECT
+    LOAD    ZERO
+    STORE   L_SPEED_CORRECT
     ; Start the turn
-	OUT     RESETPOS
-	LOADI	-90
-	STORE	DTheta
+    OUT     RESETPOS
+    LOADI   -90
+    STORE   DTheta
 BIG_TURN_RIGHT_LOOP:
     IN      Theta
     ADDI    -270
@@ -220,8 +220,8 @@ FOLLOW_RIGHT_WALL: ; TODO: Make this a subroutine
     SUB     WALL_FAR_LIMIT
     JPOS    TURN_RIGHT
     ; if no changes are detected, stay straight
-    LOAD	ZERO
-    STORE	L_SPEED_CORRECT
+    LOAD    ZERO
+    STORE   L_SPEED_CORRECT
     ; set velocity to fast
     LOAD    FFast
     STORE   DVel
@@ -251,8 +251,8 @@ FOLLOW_LEFT_WALL: ; TODO: Make this a subroutine
     SUB     WALL_FAR_LIMIT
     JPOS    TURN_LEFT
     ; if no changes are detected, stay straight
-    LOAD	ZERO
-    STORE	L_SPEED_CORRECT
+    LOAD    ZERO
+    STORE   L_SPEED_CORRECT
     ; set velocity to fast
     LOAD    FFast
     STORE   DVel
@@ -264,21 +264,21 @@ FOLLOW_LEFT_WALL: ; TODO: Make this a subroutine
 TURN_LEFT:      ; TODO: make this a subroutine
     LOAD    FFast
     STORE   DVel
-	LOAD	ZERO
-    SUB		CORRECTION
-    STORE	L_SPEED_CORRECT
-    CALL	SONAR_READ
-    JUMP	SWITCH_STATE
+    LOAD    ZERO
+    SUB     CORRECTION
+    STORE   L_SPEED_CORRECT
+    CALL    SONAR_READ
+    JUMP    SWITCH_STATE
 
 ; Small turn right for following the wall
 TURN_RIGHT:     ; TODO: make this a subroutine
     LOAD    FFast
     STORE   DVel
-    LOAD	ZERO
-    ADD		CORRECTION
-    STORE	L_SPEED_CORRECT
-    CALL	SONAR_READ
-    JUMP	SWITCH_STATE
+    LOAD    ZERO
+    ADD     CORRECTION
+    STORE   L_SPEED_CORRECT
+    CALL    SONAR_READ
+    JUMP    SWITCH_STATE
 
 ;~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ; SONAR_READ
